@@ -6,22 +6,18 @@ automatic restart on crashes.
 
 ## Description
 
-This repository runs WordPress as a two-container setup:
-
-- **`wordpress`** — built from the local `Dockerfile` on top of the official
-  `wordpress:php8.5-apache` image. The official image already contains Apache,
-  PHP and a bootstrap script that generates `wp-config.php` from the
-  `WORDPRESS_*` environment variables at container start; the Dockerfile is
-  the hook for baking in custom themes/plugins later.
-- **`db`** — the official `mysql:8.4` (LTS) image. On first start it creates
-  the database and user from the `MYSQL_*` environment variables.
-
-All configuration lives **outside** the images in a local `.env` file. The
-database credentials are defined once (`MYSQL_*`) and reused for WordPress in
-`docker-compose.yaml`, so the two containers can never drift apart. Both
-services run in the same explicitly defined network (`wp-net`); WordPress
-reaches the database via the service name `db`. A healthcheck on the database
-delays the WordPress start until MySQL actually accepts connections.
+This repository runs WordPress as a two-container setup: **`wordpress`**, built
+from the local `Dockerfile` on top of the official `wordpress:php8.5-apache`
+image (which already ships Apache, PHP and a bootstrap script generating
+`wp-config.php` from the `WORDPRESS_*` variables — the Dockerfile is the hook
+for custom themes/plugins later), and **`db`**, the official `mysql:8.4` (LTS)
+image, which creates the database and user from the `MYSQL_*` variables on
+first start. All configuration lives **outside** the images in a local `.env`
+file. The database credentials are defined once (`MYSQL_*`) and reused for
+WordPress in `docker-compose.yaml`, so the two containers can never drift
+apart. Both services share the explicitly defined network `wp-net`, where
+WordPress reaches the database via the service name `db`. A healthcheck on the
+database delays the WordPress start until MySQL actually accepts connections.
 
 ## Table of Contents
 
