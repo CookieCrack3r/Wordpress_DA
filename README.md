@@ -6,7 +6,6 @@ automatic restart on crashes.
 
 ## Table of Contents
 
-- [Description](#description)
 - [Repository Contents](#repository-contents)
 - [Quickstart](#quickstart)
 - [Usage](#usage)
@@ -15,13 +14,11 @@ automatic restart on crashes.
   - [Data & Persistence](#data--persistence)
 - [Testing](#testing)
 
-
 ## Repository Contents
 
 | File | Purpose |
 | --- | --- |
-| `Dockerfile` | Builds the WordPress image from the official base image; extension point for custom themes/plugins. |
-| `docker-compose.yaml` | Runtime configuration: builds the image, wires WordPress to the database, publishes the port, attaches the named volumes, injects `.env`, sets restart policies and the DB healthcheck. |
+| `docker-compose.yaml` | Runtime configuration: pulls the pinned WordPress image, wires WordPress to the database, publishes the port, attaches the named volumes, injects `.env`, sets restart policies and the DB healthcheck. |
 | `.env.example` | Template for the local `.env` file (all configuration). Copy it to `.env` and adjust the values — the real `.env` is excluded from git. |
 | `.gitignore` | Keeps environment-specific files (`.env`) out of the repository. |
 | `README.md` | This documentation. |
@@ -39,7 +36,7 @@ on Windows/macOS, or Docker CE on Linux).
 git clone <repo-url>
 cd Wordpress
 cp .env.example .env    # then set a real MYSQL_PASSWORD
-docker compose up -d --build
+docker compose up -d
 ```
 
 Open <http://localhost:8080> (or the `HOST_PORT` you configured) and run the
@@ -68,7 +65,7 @@ The MySQL root account gets a random throwaway password
 | Change | Command |
 | --- | --- |
 | `.env` (e.g. `HOST_PORT`) | `docker compose up -d` |
-| `Dockerfile` | `docker compose up -d --build` |
+| Image tag in `docker-compose.yaml` (e.g. WordPress version) | `docker compose up -d` |
 | Reset everything (deletes site + DB!) | `docker compose down -v` |
 
 ### Data & Persistence
