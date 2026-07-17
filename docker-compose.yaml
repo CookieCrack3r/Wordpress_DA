@@ -1,0 +1,55 @@
+services:
+
+  wordpress:
+    build: .
+    container_name: wp-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${HOST_PORT:-8080}:80"
+    environment:
+      # The DB hostname is the compose service name — topology, not a secret,
+      # so it stays here. The credentials reuse the MYSQL_* values from .env
+      # so both containers can never drift apart.
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - wp-net
+
+  db:
+    image: mysql:8.4
+    container_name: wp-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # Root is never used by WordPress -> random throwaway password.
+      MYSQL_RANDOM_ROOT_PASSWORD: "1"
+    healthcheck:
+      # WordPress only starts once the DB actually accepts connections
+      # (mysqld needs a while on first start to initialize the database).
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - wp-net
+
+volumes:
+  wordpress:
+  db:
+
+# Explicit shared network so both services can always reach each other
+# (WordPress resolves the DB via the service name "db").
+networks:
+  wp-net:
